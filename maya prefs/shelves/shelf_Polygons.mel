@@ -1,0 +1,1612 @@
+global proc shelf_Polygons () {
+    global string $gBuffStr;
+    global string $gBuffStr0;
+    global string $gBuffStr1;
+
+
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Sphere: Create a polygonal sphere on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Sphere" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySphere.png" 
+        -image1 "polySphere.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonSphere" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonSphereOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "User Script" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "TOOLKIT" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "commandButton.png" 
+        -image1 "commandButton.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import maya.cmds as cmds\nimport os\nscript_path = os.path.join(cmds.internalVar(userScriptDir=True), 'Collect_Files_01.py')\nexecfile(script_path)" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 1
+        -flexibleWidthValue 32
+        -enable 1
+        -width 34
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "User Script" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "TKTv18" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "C:/Users/angeliner.HELLOHORNET/Documents/maya/2020/prefs/icons/fileLogo.png" 
+        -image1 "C:/Users/angeliner.HELLOHORNET/Documents/maya/2020/prefs/icons/fileLogo.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import maya.cmds as cmds\nimport maya.mel as mel\n\n# for texture copy and repath\nimport shutil\nimport os\nimport os.path\n\n\ndef sceneInfo():\n    scenePath=cmds.file(q=True, sceneName=True) # name of scene file\n    \n    return scenePath\n\n\ndef referenceInfo():\n\n    refPaths = []\n    \n    refAllFiles = cmds.ls(rf=True)\n    print(refAllFiles)\n\n    for reffile in refAllFiles:\n    \n        try: # error checking\n            refPaths.append( cmds.referenceQuery( reffile ,filename=True ))\n            print(refPaths)\n        except:\n            print(\"::: skipping UNKNOWN NODE REF ::: invalid ref node that connects to nothing or UNKNOWN nodes\")\n            pass\n\n    return refPaths\n    \n# refPath = cmds.referenceQuery( rigGeoList[0], filename=True) # use rigGeoList mesh to find reference path\n# P:/directors/cesar_pelizer/krog62_S03_P7_Ecomm/production/maya/lib/char/Kenzie/components/RIG/workshop/Kenzie_RIG_workshop_0006.ma\n# P:/directors/cesar_pelizer/krog62_S03_P7_Ecomm/production/maya/lib/char/Kenzie/components/RIG/Kenzie_RIG.ma\n\ndef pathPrep(path):\n    fileName = prepBaseName=os.path.split(path)[1]\n    folderPath = prepBasePath=os.path.split(path)[0]\n    \n    return folderPath, fileName\n\ndef workshopPathConversion(path):\n\n    splitWordPath = \"workshop/\"\n    splitWordFile = \"_workshop_\"\n    if path.find(splitWordPath) > -1:\n        cleanBasePath = path.split(splitWordPath)[0]\n        masterFilePath = cleanBasePath + path.split(splitWordPath)[1].split(splitWordFile)[0] + \".ma\" # assume maya ascii\n    else:\n        masterFilePath = path\n\n    if os.path.isfile(path) == True:\n        return masterFilePath\n    else:\n        print(\" !!! cannot find master file: \" + masterFilePath)\n        \n    \ndef checkReferenceFiles(path):\n    componentList = [ \"RIG\", \"MDL\", \"SHD\" ]\n    \n    for component in componentList:\n        if path.find(component):\n            return(component)\n    \n    \n# TKT option\n\ndef listFiles(path):\n    n = []\n    files = os.listdir(path)\n    \n    folder = os.path.split(path)[0]\n    \n    if not os.path.exists(folder):\n        #make folder\n        print(\"NOT\")\n        os.makedirs(folder)\n\n\ndef TKTworkshopSAVE(folderPath, fileName):\n    \n    tktWorkshopPath = folderPath.replace(\"RIG\", \"TKT/workshop\")\n    tktWorkshopBaseName = fileName.replace(\"RIG\", \"TKT_workshop\")\n\n    if not os.path.exists(tktWorkshopPath):\n        #make folder\n        print(\"NOT\")\n        os.makedirs(tktWorkshopPath)\n\n    tktWorkshopFiles = os.listdir(tktWorkshopPath)\n\n    if not tktWorkshopFiles:\n        print(\"empty folder\")\n        newTktWorkshopFileName = tktWorkshopPath +\"/\"+tktWorkshopBaseName.replace(\".ma\", \"_0001.ma\")\n        print(newTktWorkshopFileName)\n        \n    else:\n        n = []\n        for tktFiles in tktWorkshopFiles:\n            #print(tktFiles)\n            \n            if tktFiles.endswith(\"ma\") and not tktFiles.startswith(\".\"):\n                n.append(os.path.splitext(tktFiles)[0].split(\"_\")[-1])\n                padding = len(n[0]) - 1\n                #print(n)\n                #print(\"length \" + str(len(n)))\n                \n        \n        # PADDING\n        padding = len(n[0])\n        nextTktFileNumber = int(max(n)) + 1\n        print(str(nextTktFileNumber).rjust(padding, '0')) # insert Padding\n        tktVersionNumber = str(nextTktFileNumber).rjust(padding, '0')\n        \n        # NEW TKT WORKSHOP FILE NAME\n        \n        newTktWorkshopFileName = tktWorkshopPath +\"/\"+tktWorkshopBaseName.replace(\".ma\", \"_\" + tktVersionNumber + \".ma\")\n        print(newTktWorkshopFileName)\n\n    return newTktWorkshopFileName\n    #saveFile(newTktWorkshopFileName)\n    \n\n#def makeProject():\n    #make new maya project, under TKT\n    #save maya file there\n    #check if texture is not in folder and copy texture files to project\n    #\n    \ndef saveFile(path):\n    # new FILE\n    cmds.file( new=True, force=True)\n\n    # save TKT file\n    cmds.file( rename=path )\n    cmds.file( save=True, type='mayaAscii' )\n\n\n# ref in RIG\ndef referenceFile(path):\n    print(\" ref loading.....\")\n    \n    if os.path.exists(path):\n        cmds.file( path, reference=True, namespace=\"RIG\")\n\n        x = 0\n\n        while x < 1:\n            print(\" ref loading.....\")\n            refNodes=cmds.ls( references=True )\n            x = len(refNodes)\n\n        print(\" loaded and continue \")\n\n\ndef getTargetObjectList():\n\n    \n    # ----- List all objects below \"*RIG:Geometry*\"\n    allRigGEO = cmds.ls( \"*RIG:Geometry*\", dag=True, ap=True )\n    print(allRigGEO)\n\n    if not allRigGEO or len(allRigGEO) == 1: # if can't find RIG:Geometry or found it but only a group / 1 item exists, then look further\n        allRigGEO = cmds.ls( \"*RIG:MDL*\", dag=True, ap=True )\n\n    return allRigGEO\n\n\n\ndef getTargetMeshList(allRigGEO):\n\n    rigGeoList =[]\n\n    for obj in allRigGEO:\n        \n        #print(cmds.objectType( obj ))\n        shape = cmds.listRelatives(obj, shapes=True) or []# get the shape node\n        \n        try:\n            meshPointCount = cmds.geometryAttrInfo(obj+\".outMesh\", pc=True) # if error then not an mesh\n        except:\n            print(\"not a mesh \" + obj)\n            meshPointCount = 0\n\n        if len(shape) > 0 and meshPointCount > 0: # if a shape exists, then it's a mesh and added to the rigGeoList array\n            rigGeoList.append(obj)\n            print(obj)\n    \n    return rigGeoList    \n\n\ndef importShadeScene(path):\n    if os.path.exists(path):\n        # ----- import SHD scene\n        #rigAssetPath = cmds.referenceQuery( rigGeoList[0], filename=True) # use rigGeoList mesh to find reference path\n        #shdAssetPath = path.replace(\"RIG\", \"SHD\") # replace RIG with SHD to get shade asset path\n\n        cmds.file( path, i=True, namespace='SHD' ) # import shade asset with namespace SHD\n\n        # ----- set ALL mesh in rig to lambert1\n        allRigShapeObjs = cmds.ls(type='mesh', rn=True) # mesh and ref only\n        cmds.sets(allRigShapeObjs, e=True, forceElement=\"initialShadingGroup\")\n    else:\n        print(\"SHD PATH NOT FOUND\")\n\n\ndef assignShaders(geoList):\n    for obj in geoList:\n        print(\" ---------- \")\n        print(obj)\n        namespaceSplit = obj.split(\":\")\n        print(namespaceSplit)\n        \n        #SHDobjectName = \"SHD:\" + obj.split(\":\")[-1] # geoList object (obj) and replace namespace to SHD\n        SHDobjectName = obj.replace(\"RIG\", \"SHD\")\n        print(SHDobjectName)\n        global RIGnamesapce\n        RIGnamesapce = namespaceSplit[0] # save rig namespace for later\n        namespaceLen = len(namespaceSplit)\n        \n        #my_extraNameSpacesList = namespaceSplit[1:-1]\n        #print(my_extraNameSpacesList)\n        \n        \n        if cmds.objExists(SHDobjectName): # check if object exist in SHD hierarchy\n            #shdGeoList.append(SHDobjectName) # making a shd list\n            print(\"SHD object exist = \" + SHDobjectName)\n            \n            #if obj.find(\"|\") > 0: # if there are duplicate name in GEO fine \"|\"\n                #print(\"found duplicates\")\n                #cmds.select(obj.replace(RIGnamesapce, \"SHD\"), add=True) # replace multiple parts of name\n                #SHDobjectName = obj.replace(RIGnamesapce, \"SHD\")\n                #print(SHDobjectName)\n               \n            \n            shape = cmds.listRelatives(SHDobjectName, shapes=True)# get the shape node\n            print(\"shape \" + str(shape))\n            myShape = SHDobjectName +\"|\"+ shape[0]\n            \n            if obj.find(\"|\") > 0: # if duplicates are found\n                a = SHDobjectName.split(\"|\")\n                myShape = SHDobjectName +\"|\"+ shape[0]\n                print(SHDobjectName +\"|\"+shape[0])\n            \n            shadingEngine = cmds.listConnections(myShape, type='shadingEngine') or [] # get the shading engine or empty array\n            \n            \n            if len(shadingEngine) > 0: # if array is greater than 0 then apply shader to rig\n                shading_group=shadingEngine[0]\n                cmds.sets(obj, e=True, forceElement=shading_group) # assign the material to the object\n                print(\"shd engine \" + shadingEngine[0])\n                print(\"assign shader\")\n        else:\n           doesNotExistGeoList.append(obj) # keep a list to print later\n           \n           \n        #return shdGeoList[0]\n\ndef cleanup(object):\n    # ----- find the top of the SHD hierarchy so that I can delete the correct group\n\n    cmds.select( object.replace(\"RIG\",\"SHD\") ) # select the first object in this array \n    checkParent = 1\n    while checkParent > 0: # loop until the object has no parent\n        aParent = cmds.pickWalk(d=\"up\")\n        parents = cmds.listRelatives(aParent, allParents=True)\n        if parents:\n            checkParent = 1\n            \n        else:\n            checkParent = 0\n            print(\" This is the top most object in hierarchy \")\n            print(checkParent)\n\n    cmds.delete(aParent) # ----- delete the group\n    mel.eval('hyperShadePanelMenuCommand(\"hyperShadePanel1\", \"deleteUnusedNodes\");') # ----- delete unused nodes\n    \n    \n    # IMPORT LIGHTING AND RIG\n    cmds.file(lightingSceneAsset, i=True ) # ----- import lighting asset\n    cmds.file(rigMasterAssetPath, importReference=True) # ----- import references that are in scene ( should just be RIG now )\n    \n    \n    \n    # ----- namespaces\n    cmds.namespace( rm='SHD', mergeNamespaceWithRoot=True ) # remove SHD namespace from remaining materials\n    cmds.namespace( rm=RIGnamesapce, mergeNamespaceWithRoot=True ) # remove RIG namespace\n    namespaces = cmds.namespaceInfo(listOnlyNamespaces=True)\n    print(namespaces)\n\n\n    # ----- namespaces EXTRA\n    extraNamespaces = namespaces\n    extraNamespaces.remove(\"UI\")\n    extraNamespaces.remove(\"shared\")\n    print(extraNamespaces)\n\n    for nsList in extraNamespaces:\n        print(nsList)\n        #print(cmds.namespaceInfo(x, listOnlyDependencyNodes=True))\n        y = cmds.namespaceInfo(nsList, listOnlyDependencyNodes=True)\n        if not y:\n            print(nsList + \" = EMPTY namespace is REMOVED\")\n            cmds.namespace( rm=nsList, mergeNamespaceWithRoot=True ) \n\n\ndef getTextures(path):\n\n    print(\"\")\n    print(\"--- check texture section --- \")\n    print(\"\")\n\n\n    localTexturePath=path.split(\"components\")[0] + \"textures/\"\n    print(localTexturePath)\n\n\n    projectPath = path.split(\"production\")[0]\n    print(\"mainPath -> \" + projectPath)\n\n    # List all 2D textures that are also shaders\n    cmds.listNodeTypes( 'file' )\n\n    outsideTexturePathCollection = [] # set array variable\n\n    # COLLECT all paths that are outside project path\n    print(\"\")\n    print(\" --- Collecting all paths outside project path --- \")\n\n    allTextureFiles = cmds.ls(type=\"file\")\n    for tex in allTextureFiles:\n        tFile = cmds.getAttr(tex + \".fileTextureName\")\n        print(\"\")\n        print(tex)\n        #print(\"check: \" + tex + \" current pathed is: \" + tFile)\n        if tFile.find(localTexturePath) < 0 and len(tFile) > 0: # if project path is NOT found and not an empty file node\n            print(\"result: NOT LOCAL -- > outside path: \" + tex + \" at \" + str(tFile))\n            outsideTexturePathCollection.append(tex)\n            \n        elif len(tFile) > 0: # otherwise project path found and file node not empty\n            print(\"result: LOCAL ++ > local path \" + tFile)\n            #texturePath = tFile.split(\"textures\")[0] + \"textures/\" # assign the texture folder path variable\n            #texturePath=localTexturePath\n\n    return outsideTexturePathCollection\n    \ndef copyTextures(rigMasterFolderBase, outsideTexturePath):\n    print(\"\")\n    print(\"--- copy texture section --- \")\n    print(\"\")\n\n    for textureObject in outsideTexturePath:\n        \n        #check if file exists\n        \n        outsideTexturePath = cmds.getAttr(textureObject + \".fileTextureName\")\n        textureFileName = os.path.basename(outsideTexturePath)\n        \n        basePath = rigMasterFolderBase.split(\"components\")[0]\n        \n        texturePath=basePath + \"textures/\"\n        \n        print(\" Local Texture Folder is \" + texturePath)\n        \n        if outsideTexturePath.find(\"hdr\") > -1 or outsideTexturePath.find(\"HDR\") > -1:\n            texturePath = texturePath+\"/hdr/\"\n            print(texturePath)\n            if not os.path.isdir(texturePath):\n                #make folder\n                print(\" Making HDR FOLDER in texture Folder\")\n                os.makedirs(texturePath)\n        \n            \n        print(\"\")\n        #print(\"localPath is = \" + texturePath)  \n        #print(texturePath+textureFileName) # check if path combine looks right\n        newPath = texturePath+textureFileName # combine correct texture path and file name\n        print(\"+ new PATH should be = \" + newPath)\n\n        check_file_outside_exists = os.path.isfile(outsideTexturePath)\n        \n        print(\"original file exists : \" + str(check_file_outside_exists))\n        \n        if check_file_outside_exists == True:\n        \n            check_file = os.path.isfile(newPath) # check if FILE EXIST on disk at destination folder result into variable\n            print(\"+++ RESULT: \" + str(check_file) + \", check if file already in folder\" )\n            if check_file == False: # if the file does not exist then copy file\n                #print(newPath)\n                \n                print(\"--- file does not exiist --- \")\n                print(\"--- copying \" + outsideTexturePath)\n                print(\"-------- to \" + texturePath[:-1])\n                shutil.copy2(outsideTexturePath, texturePath[:-1]) # COPY FILE, [:-1] removes the last character on the string... the last \"/\"\n            else:\n                print(\"+++ local texture file found \" + newPath)\n            cmds.setAttr(textureObject + \".fileTextureName\", newPath, type=\"string\") # set/update the scene FILE texture path\n            print(\"++++ set Attr fileTextureName \" )\n            print(newPath)\n            \n        else:\n            print(\"original file does not exist: \" + outsideTexturePath)\n\n\n                   \n# ---------------------------------------------------------  START MAIN check paths -------------------------------------------------------\n\n# ----- global array variables to hold selections\n#lightingSceneAsset = \"P:/directors/cesar_pelizer/krog00_library/production/assets/light_rigs/SHD_Char_LgtRig_ACES.ma\"\nlightingSceneAsset = \"P:/directors/cesar_pelizer/krog00_library/production/maya/scenes/util/char_2020_LOOKDEV/components/LGT/char_2020_LOOKDEV_LGT.ma\"\n\n\nrefPathList = referenceInfo()\n\n#get RIG component from ref ALWAYS\nfor refPath in refPathList:\n    if checkReferenceFiles(refPath) == \"RIG\":\n        rigMasterFile= workshopPathConversion(refPath)\n\nrigMasterFolderBase, rigMasterFileBase = pathPrep(rigMasterFile)\n\nprint(rigMasterFolderBase)\nprint(rigMasterFileBase)\n\nrigMasterAssetPath = rigMasterFolderBase +\"/\"+rigMasterFileBase\n\n# where to save Tool Kit maya scene file?\nnewMayaFileName = TKTworkshopSAVE(rigMasterFolderBase, rigMasterFileBase)\n\n# new FILE\ncmds.file( new=True, force=True) # new file\nsaveFile(newMayaFileName ) # save init blank file\n\n# ref in RIG\nreferenceFile(rigMasterAssetPath) # rig master file\nrigGeoList = getTargetObjectList()\nrigMeshList = getTargetMeshList(rigGeoList)\n\n# apply shaders\nimportShadeScene( rigMasterAssetPath.replace(\"RIG\",\"SHD\") )\nassignShaders(rigMeshList)\n\ncleanup(rigGeoList[0])\n\n# texture and files\ntexturePathList = getTextures(rigMasterFolderBase)\ncopyTextures(rigMasterFolderBase, texturePathList)\n\n# save file\ncmds.file( save=True, type='mayaAscii' )\nprint(\"File Saved\")\n\n# ---------------------------------------------------------  END MAIN check paths -------------------------------------------------------\n\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Cube: Create a polygonal cube on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Cube" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyCube.png" 
+        -image1 "polyCube.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonCube" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonCubeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Cylinder: Create a polygonal cylinder on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Cylinder" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyCylinder.png" 
+        -image1 "polyCylinder.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonCylinder" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonCylinderOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Cone: Create a polygonal cone on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Cone" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyCone.png" 
+        -image1 "polyCone.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonCone" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonConeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Torus: Create a polygonal torus on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Torus" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyTorus.png" 
+        -image1 "polyTorus.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonTorus" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonTorusOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Plane: Create a polygonal plane on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Plane" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyMesh.png" 
+        -image1 "polyMesh.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonPlane" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonPlaneOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Disc: Create a polygon disc on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Disc" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyDisc.png" 
+        -image1 "polyDisc.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2018" 
+        -command "CreatePolygonDisc" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonDiscOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Platonic Solid: Create a polygon polyhedron on the grid\nRight-click for more polygon primitive types" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Platonic Solid" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyPlatonicSolid.png" 
+        -image1 "polyPlatonicSolid.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2018" 
+        -command "CreatePolygonPlatonic" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonPlatonicOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Pyramid" ( "CreatePolygonPyramid" )
+        -mi "Prism" ( "CreatePolygonPrism" )
+        -mi "Pipe" ( "CreatePolygonPipe" )
+        -mi "Helix" ( "CreatePolygonHelix" )
+        -mi "Gear" ( "CreatePolygonGear" )
+        -mi "Soccer Ball" ( "CreatePolygonSoccerBall" )
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Super Shape: Create a polygon super shape on the grid\nRight-click to choose shape type" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Super Shape" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySuperEllipse.png" 
+        -image1 "polySuperEllipse.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2018" 
+        -command "CreatePolygonSuperEllipse" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonSuperEllipseOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Super Ellipse" ( "CreatePolygonSuperEllipse" )
+        -mi "Spherical Harmonics" ( "CreatePolygonSphericalHarmonics" )
+        -mi "Ultra Shape" ( "CreatePolygonUltraShape" )
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Type: Create 3D text on the grid" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Type" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyType.png" 
+        -image1 "polyType.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2017" 
+        -command "CreatePolygonType" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "SVG: Create polygons using scalable vector graphics from the clipboard or an imported SVG file" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "SVG" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySVG.png" 
+        -image1 "polySVG.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2017" 
+        -command "CreatePolygonSVG" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Center Pivot: Select an object(s)" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Center Pivot" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "CenterPivot.png" 
+        -image1 "CenterPivot.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CenterPivot" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Delete By Type: History: Delete construction history on the selected object(s)" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Delete By Type: History" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "DeleteHistory.png" 
+        -image1 "DeleteHistory.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "DeleteHistory" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Freeze Transformations: Select an object(s)" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Freeze Transformations" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "FreezeTransform.png" 
+        -image1 "FreezeTransform.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "FreezeTransformations" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Combine: Combine the selected polygon objects into one single object to allow operations such as merges or face trims." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Combine" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyUnite.png" 
+        -image1 "polyUnite.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CombinePolygons" 
+        -sourceType "mel" 
+        -doubleClickCommand "CombinePolygonsOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Extract: Extract the currently selected faces from their shell and shows a manipulator to adjust their offset." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Extract" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyChipOff.png" 
+        -image1 "polyChipOff.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "ExtractFace" 
+        -sourceType "mel" 
+        -doubleClickCommand "ExtractFaceOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Mirror: Mirror geometry across an axis." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Mirror" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyMirrorGeometry.png" 
+        -image1 "polyMirrorGeometry.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2017" 
+        -command "MirrorPolygonGeometry" 
+        -sourceType "mel" 
+        -doubleClickCommand "MirrorPolygonGeometryOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Smooth: Add faces to the selected polygon objects to smooth them." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Smooth" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySmooth.png" 
+        -image1 "polySmooth.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "SmoothPolygon" 
+        -sourceType "mel" 
+        -doubleClickCommand "SmoothPolygonOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Reduce: Reduce number of polygonal components for selected objects." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Reduce" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyReduce.png" 
+        -image1 "polyReduce.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2014" 
+        -command "ReducePolygon" 
+        -sourceType "mel" 
+        -doubleClickCommand "ReducePolygonOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Remesh: Redefines the topology of a mesh by splitting edges to add detail and/or collapsing edges to reduce detail. Use Remesh to create a uniformly tessellated triangular mesh." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Remesh" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyRemesh.png" 
+        -image1 "polyRemesh.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2020" 
+        -command "PolyRemesh" 
+        -sourceType "mel" 
+        -doubleClickCommand "PolyRemeshOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Retopologize: Generates clean, new topology that preserves the shape of the source while converting the mesh into four-sided faces (quads)." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Retopologize" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyRetopo.png" 
+        -image1 "polyRetopo.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2020" 
+        -command "PolyRetopo" 
+        -sourceType "mel" 
+        -doubleClickCommand "PolyRetopoOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Extrude: Extend new vertices/edges/faces from existing spots on a mesh." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Extrude" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyExtrudeFacet.png" 
+        -image1 "polyExtrudeFacet.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "PolyExtrude" 
+        -sourceType "mel" 
+        -doubleClickCommand "PolyExtrudeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Bridge: Create a bridge between two sets of edges or faces " 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Bridge" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyBridge.png" 
+        -image1 "polyBridge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "performBridgeOrFill" 
+        -sourceType "mel" 
+        -doubleClickCommand "BridgeEdgeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Bevel Components: Create a bevel along the selected edges or faces" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Bevel Components" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyBevel.png" 
+        -image1 "polyBevel.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "performBevelOrChamfer" 
+        -sourceType "mel" 
+        -doubleClickCommand "BevelPolygonOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Merge: Merge vertices / border edges based on selection." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Merge" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyMerge.png" 
+        -image1 "polyMerge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "PolyMerge" 
+        -sourceType "mel" 
+        -doubleClickCommand "PolyMergeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Merge To Center: Merge selected components to their center point." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Merge To Center" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyMergeToCenter.png" 
+        -image1 "polyMergeToCenter.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "MergeToCenter" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Flip Triangle Edge: Flip the edge between two triangles" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Flip Triangle Edge" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyFlipEdge.png" 
+        -image1 "polyFlipEdge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "FlipTriangleEdge" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Duplicate: Duplicate the currently selected faces in a new object." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Duplicate" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyDuplicateFacet.png" 
+        -image1 "polyDuplicateFacet.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "DuplicateFace" 
+        -sourceType "mel" 
+        -doubleClickCommand "DuplicateFaceOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Collapse: Removes selected components by merging their adjacent vertices." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Collapse" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyCollapseEdge.png" 
+        -image1 "polyCollapseEdge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "PolygonCollapse" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Circularize: Organize the vertices of selected components into a circle that aligns to the mesh surface." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Circularize" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyCircularize.png" 
+        -image1 "polyCircularize.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2018" 
+        -command "PolyCircularize" 
+        -sourceType "mel" 
+        -doubleClickCommand "PolyCircularizeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Multi-Cut Tool: Tools to cut, slice and insert edges on polygons" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Multi-Cut Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "multiCut_NEX32.png" 
+        -image1 "multiCut_NEX32.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2015" 
+        -command "dR_multiCutTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "dR_multiCutTool; toolPropertyWindow;" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Target Weld Tool: Merges two edges or vertices into a single component." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Target Weld Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "weld_NEX32.png" 
+        -image1 "weld_NEX32.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "MergeVertexTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "MergeVertexToolOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Quad Draw Tool: Drop points on Live objects to create new faces for re-topology" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Quad Draw Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "quadDraw_NEX32.png" 
+        -image1 "quadDraw_NEX32.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "dR_quadDrawTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "dR_quadDrawTool; toolPropertyWindow;" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Create UV texture coordinates for the selected object, using a planar projection shape. Best suited for surfaces that are relatively flat or completely visible from a single camera angle" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Planar Mapping" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyPlanProjLarge.png" 
+        -image1 "polyPlanProjLarge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "performPolyProjection Planar 0" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Create UV texture coordinates for the selected object, using a cylindrical projection shape that gets wrapped around the mesh. Best suited for completely enclosed cylindrical shapes with no holes or projections on the surface" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Cylindrical Mapping" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyCylProjLarge.png" 
+        -image1 "polyCylProjLarge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "performPolyProjection Cylindrical 0" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Create UV texture coordinates for the selected object, using a spherical projection shape that gets wrapped around the mesh. Best suited for completely enclosed spherical shapes with no holes or projections on the surface" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Spherical Mapping" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySphereProjLarge.png" 
+        -image1 "polySphereProjLarge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "performPolyProjection Spherical 0" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Create UV texture coordinates for the selected object or faces by automatically finding the best UV placement using simultaneous projections from multiple planes" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Automatic Mapping" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyAutoProjLarge.png" 
+        -image1 "polyAutoProjLarge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "performPolyAutoProj 0" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Create UV texture coordinates that follow along the contours of the selected faces. Best suited for tracks and roads on irregular, terrain-like meshes" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Contour Stretch" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyContourProjLarge.png" 
+        -image1 "polyContourProjLarge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2016" 
+        -command "UVContourStretchProjection" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "UV Editor...: Texture coordinate mapping view" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "UV Editor..." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "textureEditor.png" 
+        -image1 "textureEditor.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2018" 
+        -command "TextureViewWindow" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "3D UV Grab Tool: Grab UVs in 3D viewport" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "3D Grab UV Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "UV_3D_Grab_Brush.png" 
+        -image1 "UV_3D_Grab_Brush.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2016" 
+        -command "SetMeshGrabUVTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "ShowMeshGrabUVToolOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "3D Cut and Sew UV Tool: Interactively cut and sew UVs directly on the model." 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "3D Cut and Sew UV Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "CutSewUVTool.png" 
+        -image1 "CutSewUVTool.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -version "2018" 
+        -command "SetCutSewUVTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "SetCutSewUVTool;toolPropertyWindow;" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+
+} 

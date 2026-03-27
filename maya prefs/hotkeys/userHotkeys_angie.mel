@@ -1,0 +1,37 @@
+//Maya Preference 2020 (Release 1)
+//
+//
+
+//
+// The hotkey set
+//
+hotkeySet -source "Maya_Default" -current angie;
+//
+// The hotkey contexts and hotkeys
+//
+hotkey -keyShortcut "$" -name ("ReversePolygonNormalsNameCommand");
+hotkey -keyShortcut "n" -sht -name ("ConformPolygonNameCommand");
+hotkey -keyShortcut "8" -name ("CenterPivotNameCommand");
+hotkey -keyShortcut "9" -name ("FreezeTransformationsNameCommand");
+hotkey -keyShortcut "l" -sht -name ("SeparatePolygonNameCommand");
+hotkey -keyShortcut "!" -name ("MatchTranslationNameCommand");
+hotkey -keyShortcut "y" -sht -name ("SplitEdgeRingToolNameCommand");
+hotkey -keyShortcut "z" -sht -name ("FlipUVsNameCommand");
+hotkey -keyShortcut "k" -sht -name ("CombinePolygonsNameCommand");
+hotkeyCtx -type "Editor" -addClient "nodeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "shapePanel";
+hotkeyCtx -type "Editor" -addClient "profilerPanel";
+hotkeyCtx -type "Editor" -addClient "polyTexturePlacementPanel";
+hotkeyCtx -type "Editor" -addClient "hyperShadePanel";
+hotkeyCtx -type "Editor" -addClient "timeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "graphEditor";
+hotkeyCtx -type "Editor" -addClient "outlinerPanel";
+hotkeyCtx -type "Editor" -addClient "posePanel";
+hotkeyCtx -type "Editor" -addClient "hyperGraphPanel";
+hotkeyCtx -type "Tool" -addClient "polyCutUV";
+hotkeyCtx -type "Tool" -addClient "SymmetrizeUVBrush";
+hotkeyCtx -type "Tool" -addClient "texSculptCacheContext";
+hotkeyCtx -type "Tool" -addClient "sculptMeshCache";
+hotkeyCtx -type "Tool" -addClient "texCutContext";
+hotkeyCtx -type "Tool" -addClient "xgmIGBrush";
+hotkeyCtx -type "Tool" -addClient "Unfold3DBrush";
